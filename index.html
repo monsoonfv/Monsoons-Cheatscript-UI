@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Monsoon's Cheatscript UI</title>
+<style>
+:root{ --gap:8px; }
+html,body{ height:100%; margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:#0e032e; }
+body { display:flex; }
+/* Sidebar */
+.sidebar {
+  width:200px;
+  background:#1b0f3a;
+  padding:20px;
+  box-sizing:border-box;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.sidebar button {
+  padding:10px;
+  color:white;
+  background:#2b1b5c;
+  border:none;
+  border-radius:5px;
+  cursor:pointer;
+  font-weight:bold;
+}
+.sidebar button.active { background:#6c4dff; }
+/* Main area */
+.main-container {
+  flex:1;
+  padding:6px;
+  box-sizing:border-box;
+  
+}
+.top-bar {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:10px;
+  
+}
+.top-bar input[type="text"] {
+  padding:6px;
+  border-radius:5px;
+  border:none;
+  width:250px;
+}
+/* Gallery */
+.gallery{
+  display:grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--gap);
+}
+.item{
+  position:relative;
+  overflow:hidden;
+  aspect-ratio: 1 / 1;
+  border-radius:8px;
+  cursor:pointer;
+  user-select:none;
+  display:flex;
+  flex-direction:column;
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+.item img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+  pointer-events:none;
+  
+}
+.sidebar-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
+  
+}
+
+.sidebar-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%; /* makes it circular */
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+.social-links {
+  display: flex;
+  gap: 10px;
+  margin-top: 5px;
+}
+
+.social-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.social-icon:hover {
+  transform: scale(1.2);
+}
+
+.sidebar-title {
+  color: white;
+  font-weight: bold;
+  text-align: center;
+  font-size: 17px;
+}
+
+.top-bar input[type="text"] {
+  padding: 10px;
+  border-radius: 5px;
+  border: none;
+  width: 200px;
+  background: #2b1b5c;       /* same as sidebar buttons */
+  color: white;               /* font color */
+  font-weight: bold;          /* match button font */
+  font-family: inherit;
+  cursor: text;
+}
+.top-bar input[type="text"]::placeholder {
+  color: #ccc;               /* placeholder text color */
+  font-weight: normal;
+}
+
+.item-name{
+  text-align:center;
+  color:white;
+  background:rgba(0,0,0,0.6);
+  font-size:12px;
+  padding:2px 0;
+}
+.copied-badge{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,0.45);
+  color:white;
+  font-weight:600;
+  font-size:14px;
+  opacity:0;
+  transform:scale(0.9);
+  transition:opacity .18s ease, transform .18s ease;
+  pointer-events:none;
+}
+.item.copied .copied-badge{ opacity:1; transform:scale(1); }
+.item:focus{ box-shadow:0 0 0 3px rgba(59,130,246,0.25); }
+
+@media (max-width:1100px){ .gallery{ grid-template-columns:repeat(4,1fr); } }
+@media (max-width:720px){  .gallery{ grid-template-columns:repeat(3,1fr); } }
+@media (max-width:480px){  .gallery{ grid-template-columns:repeat(2,1fr); } }
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="sidebar-header">
+        <img src="https://yt3.googleusercontent.com/WxG0f2uiMqLLbpigeM1t_e_1rgY9EvLTwjws0qHo9mrHOHJeLmrrrG1dO8RXKPVg1uZvv7JMZCc=s160-c-k-c0x00ffffff-no-rj" alt="Profile" class="sidebar-avatar">
+        <div class="sidebar-title">Made by monsoon</div>
+        <div class="social-links">
+            <a href="https://www.youtube.com/@monsoonfv" target="_blank">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/4/42/YouTube_icon_%282013-2017%29.png" alt="YouTube" class="social-icon">
+            </a>
+            <a href="https://www.tiktok.com/@monsoon.r6" target="_blank">
+              <img src="https://i.postimg.cc/KzxyZFg8/tiktok.png" alt="TikTok" class="social-icon">
+            </a>
+          </div>
+          
+      </div>        
+  <button data-category="All" class="active">All</button>
+  <button data-category="Snipers">Snipers</button>
+  <button data-category="Mobility">Mobility</button>
+  <button data-category="Bows">Bows</button>
+  <button data-category="Explosives">Explosives</button>
+  <button data-category="Traps">Traps</button>
+  <button data-category="Vehicles">Vehicles</button>
+  <button data-category="Ammo">Ammo</button>
+  <button data-category="Misc">Misc</button>
+  
+</div>
+
+<div class="main-container">
+  <div class="top-bar">
+    <input type="text" id="search" placeholder="Search items...">
+  </div>
+  <div class="gallery" aria-label="Image gallery. Click an image to copy its text.">
+
+    <!-- Snipers 1-8 -->
+    <a class="item" tabindex="0" role="button" data-category="Snipers" data-copy="cheat giveitem WID_Sniper_Heavy_Athena_SR_Ore_T03">
+      <img src="https://pm1.aminoapps.com/7023/75f175d4f234413069fc4cd94269c1815d0c0652r1-358-358v2_hq.jpg" alt="Image 1">
+      <div class="item-name">Heavy Sniper Rifle</div>
+      <div class="copied-badge">Copied!</div>
+    </a>
+    <a class="item" tabindex="0" role="button" data-category="Snipers" data-copy="cheat giveitem WID_Sniper_Heavy_Athena_VR_Ore_T03">
+      <img src="https://trackercdn.com/legacycdn/fortnite/69D5WID_Sniper_Heavy_Athena_VR_Ore_T03_large.png" alt="Image 2">
+      <div class="item-name">Heavy Sniper Rifle</div>
+      <div class="copied-badge">Copied!</div>
+    </a>
+    <a class="item" tabindex="0" role="button" data-category="Snipers" data-copy="cheat giveitem WID_Sniper_BoltAction_Scope_Athena_SR_Ore_T03">
+      <img src="https://trackercdn.com/legacycdn/fortnite/B485WID_Sniper_BoltAction_Scope_Athena_SR_Ore_T03_large.png" alt="Image 3">
+      <div class="item-name">Bolt Action Sniper Rifle</div>
+      <div class="copied-badge">Copied!</div>
+    </a>
+    <a class="item" tabindex="0" role="button" data-category="Snipers" data-copy="cheat giveitem WID_Sniper_BoltAction_Scope_Athena_VR_Ore_T03">
+      <img src="https://trackercdn.com/legacycdn/fortnite/7528WID_Sniper_BoltAction_Scope_Athena_VR_Ore_T03_large.png" alt="Image 4">
+      <div class="item-name">olt Action Sniper Rifle</div>
+      <div class="copied-badge">Copied!</div>
+    </a>
+    <a class="item" tabindex="0" role="button" data-category="Snipers" data-copy="cheat giveitem WID_Sniper_BoltAction_Scope_Athena_R_Ore_T03">
+      <img src="https://oyster.ignimgs.com/mediawiki/apis.ign.com/fortnite/0/01/Boltaction1.jpg?width=1280" alt="Image 5">
+      <div class="item-name">olt Action Sniper Rifle</div>
+      <div class="copied-badge">Copied!</div>
+    </a>
+    <a class="item" tabindex="0" role="button" data-category="Snipers" data-copy="cheat giveitem WID_Sniper_NoScope_Athena_SR_Ore_T03">
+      <img src="https://i.postimg.cc/8Cqnnx7H/2025-09-27-09-19-35-index-html-Visual-Studio-Code.png" alt="Image 6">
+      <div class="item-name">Hunting Rifle</div>
+      <div class="copied-badge">Copied!</div>
+    </a>
+    <a class="item" tabindex="0" role="button" data-category="Snipers" data-copy="cheat giveitem WID_Sniper_NoScope_Athena_VR_Ore_T03">
+      <img src="https://i.postimg.cc/6Q7mcBpS/2025-09-27-09-20-03-index-html-Visual-Studio-Code.png" alt="Image 7">
+      <div class="item-name">Hunting Rifle</div>
+      <div class="copied-badge">Copied!</div>
+    </a>
+    <a class="item" tabindex="0" role="button" data-category="Snipers" data-copy="cheat giveitem WID_Sniper_NoScope_Athena_R_Ore_T03">
+      <img src="https://i.postimg.cc/nLsP2nhw/2025-09-27-09-22-07-index-html-Visual-Studio-Code.png" alt="Image 8">
+      <div class="item-name">Hunting Rifle</div>
+      <div class="copied-badge">Copied!</div>
+
+      <a class="item" tabindex="0" role="button" data-category="Snipers" data-copy="cheat giveitem WID_WaffleTruck_Sniper_DragonBreath">
+        <img src="https://i.postimg.cc/2yqFW7FB/2025-09-27-11-12-30-index-html-Visual-Studio-Code.png" alt="Image 31">
+        <div class="item-name">Dragons Breath Sniper Rifle</div>
+        <div class="copied-badge">Copied!</div>
+
+        <a class="item" tabindex="0" role="button" data-category="Snipers" data-copy="cheat giveitem WID_WaffleTruck_BoomSniper">
+            <img src="https://i.postimg.cc/bN9Htr1p/2025-09-27-11-14-27-General-Project-Reboot-Discord.png" alt="Image 32">
+            <div class="item-name">Boom Sniper Rifle</div>
+            <div class="copied-badge">Copied!</div>
+
+    <a class="item" tabindex="0" role="button" data-category="Snipers" data-copy="cheat giveitem WID_Sniper_CoreSniper_Athena_SR">
+<img src="https://i.postimg.cc/sDHxqRzd/2025-09-27-11-16-25-General-Project-Reboot-Discord.png" alt="Image 33">
+<div class="item-name">Hunter Bolt Action Sniper Rifle</div>
+  <div class="copied-badge">Copied!</div>
+
+  <a class="item" tabindex="0" role="button" data-category="Snipers" data-copy="cheat giveitem WID_Sniper_CoreSniper_Athena_VR">
+<img src="https://i.postimg.cc/CxZ5V6ht/2025-09-27-11-16-13-General-Project-Reboot-Discord.png" alt="Image 34">
+<div class="item-name">Hunter Bolt Action Sniper Rifle</div>
+ <div class="copied-badge">Copied!</div>
+
+ <a class="item" tabindex="0" role="button" data-category="Snipers" data-copy="cheat giveitem WID_WaffleTruck_Sniper_StormScout">
+    <img src="https://i.postimg.cc/QdXLQFPP/2025-09-27-11-19-54-General-Project-Reboot-Discord.png" alt="Image 35">
+    <div class="item-name">Storm Scout</div>
+     <div class="copied-badge">Copied!</div>
+
+     <a class="item" tabindex="0" role="button" data-category="Snipers" data-copy="cheat giveitem WID_Sniper_Weather_Athena_SR">
+        <img src="https://i.postimg.cc/MZyr9Wyk/2025-09-27-11-21-39-index-html-Visual-Studio-Code.png" alt="Image 36">
+        <div class="item-name">Storm Scout</div>
+         <div class="copied-badge">Copied!</div>
+
+         <a class="item" tabindex="0" role="button" data-category="Snipers" data-copy="cheat giveitem WID_Sniper_Weather_Athena_VR">
+            <img src="https://i.postimg.cc/pVD1s2Dv/2025-09-27-11-21-34-index-html-Visual-Studio-Code.png" alt="Image 37">
+            <div class="item-name">Storm Scout</div>
+             <div class="copied-badge">Copied!</div>
+
+             <a class="item" tabindex="0" role="button" data-category="Snipers" data-copy="cheat giveitem WID_Sniper_Standard_Scope_Athena_SR_Ore_T03">
+                <img src="https://i.postimg.cc/JnRBmcdx/2025-09-27-11-22-58-General-Project-Reboot-Discord.png" alt="Image 38">
+                <div class="item-name">Semi Auto Sniper Rifle</div>
+                 <div class="copied-badge">Copied!</div>
+    </a>
+
+    <!-- Mobility 9-18 -->
+    <a class="item" tabindex="0" role="button" data-category="Mobility" data-copy="cheat giveitem WID_Hook_Gun_Slide">
+      <img src="https://i.postimg.cc/SKXvdmxv/2025-09-27-09-23-32-index-html-Visual-Studio-Code.png" alt="Image 9">
+      <div class="item-name">Grappler</div>
+      <div class="copied-badge">Copied!</div>
+
+      <a class="item" tabindex="0" role="button" data-category="Mobility" data-copy="cheat giveitem WID_Boss_GrapplingHoot">
+        <img src="https://i.postimg.cc/zDc3Pr8Z/2025-09-27-11-25-28-General-Project-Reboot-Discord.png" alt="Image 39">
+        <div class="item-name">Jules Grappler Glider Gun</div>
+        <div class="copied-badge">Copied!</div>
+
+    </a>
+    <a class="item" tabindex="0" role="button" data-category="Mobility" data-copy="cheat giveitem WID_Athena_IcyGrapple">
+      <img src="https://i.postimg.cc/4d8C2WT1/2025-09-27-10-08-48-index-html-Visual-Studio-Code.png" alt="Image 10">
+      <div class="item-name">Icy Grappler</div>
+      <div class="copied-badge">Copied!</div>
+    </a>
+    <a class="item" tabindex="0" role="button" data-category="Mobility" data-copy="cheat giveitem WID_Badger_Grape_VR">
+      <img src="https://i.postimg.cc/PqLRyd56/2025-09-27-09-27-07-index-html-Visual-Studio-Code.png" alt="Image 11">
+      <div class="item-name">Batman Grappler</div>
+      <div class="copied-badge">Copied!</div>
+    </a>
+    <a class="item" tabindex="0" role="button" data-category="Mobility" data-copy="cheat giveitem Athena_ShockGrenade">
+      <img src="https://i.postimg.cc/Jhy2xRzF/2025-09-27-09-25-29-index-html-Visual-Studio-Code.png" alt="Image 12">
+      <div class="item-name">Shockwave Grenade</div>
+      <div class="copied-badge">Copied!</div>
+
+      <a class="item" tabindex="0" role="button" data-category="Mobility" data-copy="cheat giveitem Athena_KnockGrenade">
+        <img src="https://trackercdn.com/legacycdn/fortnite/09BCAthena_KnockGrenade_large.png" alt="Image 40">
+        <div class="item-name">Impulse Grenade</div>
+        <div class="copied-badge">Copied!</div>
+
+    </a>
+    <a class="item" tabindex="0" role="button" data-category="Mobility" data-copy="cheat giveitem WID_Launcher_Shockwave_Athena_UR_Ore_T03">
+      <img src="https://i.postimg.cc/s2BNm3gJ/2025-09-27-09-29-20-monsoonfv-s-Group-Discord.png" alt="Image 13">
+      <div class="item-name">Kit's Shockwave Launcher</div>
+      <div class="copied-badge">Copied!</div>
+    </a>
+    <a class="item" tabindex="0" role="button" data-category="Mobility" data-copy="cheat giveitem WID_Pistol_Flintlock_Athena_C">
+      <img src="https://preview.redd.it/as-a-follow-up-to-my-last-post-about-pistols-pick-a-gun-v0-t2urss7qidmd1.jpg?width=512&format=pjpg&auto=webp&s=903a71d51a3b760894e618238bc4de01fa2655f6" alt="Image 14">
+      <div class="item-name">Flint Knock</div>
+      <div class="copied-badge">Copied!</div>
+    </a>
+    <a class="item" tabindex="0" role="button" data-category="Mobility" data-copy="cheat giveitem WID_Pistol_Flintlock_Athena_UC">
+      <img src="https://trackercdn.com/legacycdn/fortnite/2AE8WID_Pistol_Flintlock_Athena_C_large.png" alt="Image 15">
+      <div class="item-name">Flint Knock</div>
+      <div class="copied-badge">Copied!</div>
+    </a>
+    <a class="item" tabindex="0" role="button" data-category="Mobility" data-copy="cheat giveitem WID_Pistol_HandCannon_Tech_Athena_SR_Ore_T03">
+      <img src="https://i.postimg.cc/C1xH7NNN/2025-09-27-10-03-00-media-Project-Reboot-Discord.png" alt="Image 16">
+      <div class="item-name">Flint Hand Cannon</div>
+      <div class="copied-badge">Copied!</div>
+    </a>
+    <a class="item" tabindex="0" role="button" data-category="Mobility" data-copy="cheat giveitem Athena_Rift_Item">
+      <img src="https://trackercdn.com/legacycdn/fortnite/5E71Athena_Rift_Item_large.png" alt="Image 17">
+      <div class="item-name">Rift To Go</div>
+      <div class="copied-badge">Copied!</div>
+    </a>
+    <a class="item" tabindex="0" role="button" data-category="Mobility" data-copy="cheat giveitem WID_Athena_AppleSun">
+      <img src="https://i.postimg.cc/CKXkCgRz/Crash-Pad-Upscaled.jpg" alt="Image 18">
+      <div class="item-name">Crash Pad</div>
+      <div class="copied-badge">Copied!</div>
+    </a>
+
+    <!-- Ammo 19-24 -->
+    <a class="item" tabindex="0" role="button" data-category="Ammo" data-copy="cheat giveitem AthenaAmmoDataBulletsHeavy 999">
+      <img src="https://i.postimg.cc/5tRTw65S/2025-09-27-10-10-54-index-html-Visual-Studio-Code.png" alt="Image 19">
+      <div class="item-name">Heavy Ammo</div>
+      <div class="copied-badge">Copied!</div>
+    </a>
+    <a class="item" tabindex="0" role="button" data-category="Ammo" data-copy="cheat giveitem AthenaAmmoDataBulletsMedium 999">
+      <img src="https://i.postimg.cc/FK33x632/2025-09-27-10-12-00-index-html-Visual-Studio-Code.png" alt="Image 20">
+      <div class="item-name">Medium Ammo</div>
+      <div class="copied-badge">Copied!</div>
+    </a>
+    <a class="item" tabindex="0" role="button" data-category="Ammo" data-copy="cheat giveitem AthenaAmmoDataBulletsLight 999">
+      <img src="https://i.postimg.cc/VNnnFhnp/2025-09-27-10-12-11-index-html-Visual-Studio-Code.png" alt="Image 21">
+      <div class="item-name">Light Ammo</div>
+      <div class="copied-badge">Copied!</div>
+    </a>
+    <a class="item" tabindex="0" role="button" data-category="Ammo" data-copy="cheat giveitem AthenaAmmoDataShells 999">
+      <img src="https://i.postimg.cc/hGTT0YTN/2025-09-27-10-11-52-index-html-Visual-Studio-Code.png" alt="Image 22">
+      <div class="item-name">Shells</div>
+      <div class="copied-badge">Copied!</div>
+    </a>
+    <a class="item" tabindex="0" role="button" data-category="Ammo" data-copy="cheat giveitem AthenaAmmoDataRockets 999">
+      <img src="https://i.postimg.cc/N0mmxnmN/2025-09-27-10-12-19-index-html-Visual-Studio-Code.png" alt="Image 23">
+      <div class="item-name">Rockets</div>
+      <div class="copied-badge">Copied!</div>
+    </a>
+    <a class="item" tabindex="0" role="button" data-category="Ammo" data-copy="cheat giveitem AthenaAmmoDataEnergyCell 999">
+      <img src="https://i.postimg.cc/GmwhTWW1/ee2.png" alt="Image 24">
+      <div class="item-name">Energy Cells</div>
+      <div class="copied-badge">Copied!</div>
+    </a>
+
+    <!-- Traps 25-30 -->
+    <a class="item" tabindex="0" role="button" data-category="Traps" data-copy="cheat giveitem TID_Floor_Player_Launch_Pad_Athena">
+      <img src="https://i.postimg.cc/WzNNh5GT/2025-09-27-10-26-13-index-html-Visual-Studio-Code.png" alt="Image 25">
+      <div class="item-name">Launch Pad</div>
+      <div class="copied-badge">Copied!</div>
+    </a>
+    <a class="item" tabindex="0" role="button" data-category="Traps" data-copy="cheat giveitem TID_Context_BouncePad_Athena">
+      <img src="https://i.postimg.cc/MHvLPRxq/2025-09-27-10-29-27-index-html-Visual-Studio-Code.png" alt="Image 26">
+      <div class="item-name">Bouncer</div>
+      <div class="copied-badge">Copied!</div>
+    </a>
+    <a class="item" tabindex="0" role="button" data-category="Traps" data-copy="cheat giveitem TID_Floor_Player_Jump_Pad_Free_Direction_Athena">
+      <img src="https://i.postimg.cc/MTqkZvSh/2025-09-27-10-31-07-index-html-Visual-Studio-Code.png" alt="Image 27">
+      <div class="item-name">Directional Jump Pad</div>
+      <div class="copied-badge">Copied!</div>
+    </a>
+    <a class="item" tabindex="0" role="button" data-category="Traps" data-copy="cheat giveitem TID_Floor_Player_Jump_Pad_Athena">
+      <img src="https://i.postimg.cc/hGtNzNwQ/2025-09-27-10-31-44-index-html-Visual-Studio-Code.png" alt="Image 28">
+      <div class="item-name">Upwards Pad</div>
+      <div class="copied-badge">Copied!</div>
+    </a>
+    <a class="item" tabindex="0" role="button" data-category="Traps" data-copy="cheat giveitem TID_Context_SpeedBoost">
+      <img src="https://i.postimg.cc/jS3TQB9h/spedded.png" alt="Image 29">
+      <div class="item-name">Speed Boost</div>
+      <div class="copied-badge">Copied!</div>
+    </a>
+    <a class="item" tabindex="0" role="button" data-category="Traps" data-copy="cheat giveitem TID_Context_Freeze_Athena">
+      <img src="https://i.postimg.cc/m2hcjrHN/2025-09-27-10-35-05-index-html-Visual-Studio-Code.png" alt="Image 30">
+      <div class="item-name">Chiller</div>
+      <div class="copied-badge">Copied!</div>
+    </a>
+
+    <!-- Misc 31 -->
+    <a class="item" tabindex="0" role="button" data-category="Misc" data-copy="cheat giveitem Athena_SuperTowerGrenade_A">
+      <img src="https://imgix.bustle.com/inverse/94/72/0e/1a/c1d7/464f/a313/fcaf8969f607/fortnite-port-a-fortress-release-date-rarity.jpeg?w=1200&h=1200&fit=crop&crop=faces&fm=jpg" alt="Image 31">
+      <div class="item-name">Port A Fortress</div>
+      <div class="copied-badge">Copied!</div>
+
+      <a class="item" tabindex="0" role="button" data-category="Bows" data-copy="cheat giveitem WID_Sniper_Neon_Bow_SR_Crystal_T04">
+        <img src="https://i.postimg.cc/PqcTQ1gG/2025-09-27-11-49-12-media-Project-Reboot-Discord.png" alt="Image 49">
+        <div class="item-name">Xenon Bow</div>
+        <div class="copied-badge">Copied!</div>
+
+      <a class="item" tabindex="0" role="button" data-category="Bows" data-copy="cheat giveitem WID_Bow_Metal_Athena_R">
+        <img src="https://i.postimg.cc/3Ndj5Fk5/2025-09-27-11-32-28-index-html-Visual-Studio-Code.png" alt="Image 41">
+        <div class="item-name">Mechanical Bow</div>
+        <div class="copied-badge">Copied!</div>
+
+        <a class="item" tabindex="0" role="button" data-category="Bows" data-copy="cheat giveitem WID_Bow_Bone_Athena_R">
+            <img src="https://i.postimg.cc/wjd4K3d5/2025-09-27-11-34-08-index-html-Visual-Studio-Code.png" alt="Image 42">
+            <div class="item-name">Primal Bow</div>
+            <div class="copied-badge">Copied!</div>
+
+            <a class="item" tabindex="0" role="button" data-category="Bows" data-copy="cheat giveitem WID_Athena_Bow_Scrap_UC">
+                <img src="https://i.postimg.cc/XJTcwDNS/2025-09-27-11-35-21-index-html-Visual-Studio-Code.png" alt="Image 43">
+                <div class="item-name">Makeshift Bow</div>
+                <div class="copied-badge">Copied!</div>
+
+          <a class="item" tabindex="0" role="button" data-category="Bows" data-copy="cheat giveitem WID_Bow_Shockwave_Athena_SR">
+             <img src="https://i.postimg.cc/J4d7PVVy/2025-09-27-11-37-53-index-html-Visual-Studio-Code.png" alt="Image 44">
+             <div class="item-name">Mechanical Shockwave Bow</div>
+            <div class="copied-badge">Copied!</div>
+
+       <a class="item" tabindex="0" role="button" data-category="Bows" data-copy="cheat giveitem WID_Bow_Shockwave_Athena_VR">
+           <img src="https://i.postimg.cc/SRkjFWDK/2025-09-27-11-37-09-index-html-Visual-Studio-Code.png" alt="Image 45">
+          <div class="item-name">Mechanical Shockwave Bow</div>
+          <div class="copied-badge">Copied!</div>
+
+      <a class="item" tabindex="0" role="button" data-category="Bows" data-copy="cheat giveitem WID_Bow_Flame_Athena_SR">
+          <img src="https://i.postimg.cc/d0WKtGsc/2025-09-27-11-40-02-index-html-Visual-Studio-Code.png" alt="Image 46">
+         <div class="item-name">Primal Flame Bow</div>
+         <div class="copied-badge">Copied!</div>
+
+    <a class="item" tabindex="0" role="button" data-category="Bows" data-copy="cheat giveitem WID_Bow_Flame_Athena_VR">
+         <img src="https://i.postimg.cc/L6vDWDNR/2025-09-27-11-40-18-index-html-Visual-Studio-Code.png" alt="Image 47">
+         <div class="item-name">Primal Flame Bow</div>
+        <div class="copied-badge">Copied!</div>
+
+        <a class="item" tabindex="0" role="button" data-category="Bows" data-copy="cheat giveitem WID_Bow_ClusterBomb_Athena_Boss">
+            <img src="https://i.postimg.cc/PrLNGrMK/2025-09-27-11-46-50-media-Project-Reboot-Discord.png" alt="Image 48">
+            <div class="item-name">Raz's Explosive Bow</div>
+           <div class="copied-badge">Copied!</div>
+
+    <!-- Explosives 31 -->
+
+    <a class="item" tabindex="0" role="button" data-category="Explosives" data-copy="cheat giveitem WID_Launcher_Rocket_Athena_SR_Ore_T03">
+        <img src="https://trackercdn.com/legacycdn/fortnite/97D4WID_Launcher_Rocket_Athena_SR_Ore_T03_large.png" alt="Image 50">
+        <div class="item-name">Rocket Launcher</div>
+       <div class="copied-badge">Copied!</div>
+
+       <a class="item" tabindex="0" role="button" data-category="Explosives" data-copy="cheat giveitem WID_Launcher_Rocket_Athena_VR_Ore_T03">
+        <img src="https://trackercdn.com/legacycdn/fortnite/CE2AWID_Launcher_Rocket_Athena_VR_Ore_T03_large.png" alt="Image 51">
+        <div class="item-name">Rocket Launcher</div>
+       <div class="copied-badge">Copied!</div>
+
+       <a class="item" tabindex="0" role="button" data-category="Explosives" data-copy="cheat giveitem WID_Launcher_Pumpkin_Athena_SR_Ore_T03">
+        <img src="https://i.postimg.cc/Z5vSKW9w/2025-09-27-12-00-02-index-html-Visual-Studio-Code.png" alt="Image 52">
+        <div class="item-name">Pumpkin Launcher</div>
+       <div class="copied-badge">Copied!</div>
+
+       <a class="item" tabindex="0" role="button" data-category="Explosives" data-copy="cheat giveitem WID_Launcher_Pumpkin_Athena_VR_Ore_T03">
+        <img src="https://i.postimg.cc/JzkfCSgd/2025-09-27-12-00-48-index-html-Visual-Studio-Code.png" alt="Image 53">
+        <div class="item-name">Pumpkin Launcher</div>
+       <div class="copied-badge">Copied!</div>
+
+       <a class="item" tabindex="0" role="button" data-category="Explosives" data-copy="cheat giveitem WID_RC_Rocket_Athena_SR_T03">
+        <img src="https://i.postimg.cc/C5nNfpj0/2025-09-27-12-02-31-index-html-Visual-Studio-Code.png" alt="Image 54">
+        <div class="item-name">Guided Missile Launcher</div>
+       <div class="copied-badge">Copied!</div>
+
+       <a class="item" tabindex="0" role="button" data-category="Explosives" data-copy="cheat giveitem WID_RC_Rocket_Athena_VR_T03">
+        <img src="https://i.postimg.cc/c1t2npx2/2025-09-27-12-03-36-index-html-Visual-Studio-Code.png" alt="Image 55">
+        <div class="item-name">Guided Missile Launcher</div>
+       <div class="copied-badge">Copied!</div>
+
+       <a class="item" tabindex="0" role="button" data-category="Explosives" data-copy="cheat giveitem WID_Launcher_Grenade_Athena_SR_Ore_T03">
+        <img src="https://i.postimg.cc/G2C8jw0S/2025-09-27-12-04-53-index-html-Visual-Studio-Code.png" alt="Image 56">
+        <div class="item-name">Grenade Launcher</div>
+       <div class="copied-badge">Copied!</div>
+
+       <a class="item" tabindex="0" role="button" data-category="Explosives" data-copy="cheat giveitem WID_Launcher_Grenade_Athena_VR_Ore_T03">
+        <img src="https://i.postimg.cc/d0mtwhXg/2025-09-27-12-08-33-Downloads-File-Explorer.png" alt="Image 57">
+        <div class="item-name">Grenade Launcher</div>
+       <div class="copied-badge">Copied!</div>
+
+       <a class="item" tabindex="0" role="button" data-category="Explosives" data-copy="cheat giveitem WID_GrenadeLauncher_Prox_Athena_SR">
+        <img src="https://i.postimg.cc/FKmNW9RP/2025-09-27-12-09-36-index-html-Visual-Studio-Code.png" alt="Image 58">
+        <div class="item-name">Proximity Grenade Launcher</div>
+       <div class="copied-badge">Copied!</div>
+
+       <a class="item" tabindex="0" role="button" data-category="Explosives" data-copy="cheat giveitem WID_GrenadeLauncher_Prox_Athena_VR">
+        <img src="https://i.postimg.cc/LsNKxLGp/2025-09-27-12-09-44-index-html-Visual-Studio-Code.png" alt="Image 59">
+        <div class="item-name">Proximity Grenade Launcher</div>
+       <div class="copied-badge">Copied!</div>
+
+       <a class="item" tabindex="0" role="button" data-category="Mobility" data-copy="cheat giveitem WID_HighTower_Tomato_Repulsor_CoreBR">
+        <img src="https://i.postimg.cc/hjLCCBXf/iron.png" alt="Image 60">
+        <div class="item-name">Iron Man's Repulsor Gauntlets</div>
+       <div class="copied-badge">Copied!</div>
+
+       <a class="item" tabindex="0" role="button" data-category="Mobility" data-copy="cheat giveitem WID_HighTower_Date_ChainLightning_CoreBR">
+        <img src="https://i.postimg.cc/TPRhyjn7/ddarcg.png" alt="Image 61">
+        <div class="item-name">Doctor Doom's Arcane Gauntlets</div>
+       <div class="copied-badge">Copied!</div>
+
+       <a class="item" tabindex="0" role="button" data-category="Misc" data-copy="cheat giveitem WID_Athena_Bucket_Old">
+        <img src="https://i.postimg.cc/kXsg060N/2025-09-27-12-22-30-index-html-Visual-Studio-Code.png" alt="Image 62">
+        <div class="item-name">Rusty Can</div>
+       <div class="copied-badge">Copied!</div>
+
+<!-- Vehicles -->
+
+<a class="item" tabindex="0" role="button" data-category="Vehicles" data-copy="cheat summon /Game/Athena/DrivableVehicles/JackalVehicle_Athena.JackalVehicle_Athena_C">
+    <img src="https://i.postimg.cc/pLnzRBPv/2025-09-27-12-42-44-index-html-Visual-Studio-Code.png" alt="Image 68">
+    <div class="item-name">Driftboard</div>
+   <div class="copied-badge">Copied!</div>
+
+   <a class="item" tabindex="0" role="button" data-category="Vehicles" data-copy="cheat summon /Game/Athena/DrivableVehicles/AntelopeVehicle.AntelopeVehicle_C">
+    <img src="https://i.postimg.cc/tCFnc4k9/2025-09-27-12-46-37-index-html-Visual-Studio-Code.png" alt="Image 69">
+    <div class="item-name">Quadcrasher</div>
+   <div class="copied-badge">Copied!</div>
+
+   <a class="item" tabindex="0" role="button" data-category="Vehicles" data-copy="cheat summon /Game/Athena/DrivableVehicles/Golf_Cart/Golf_Cart_Base/Blueprints/GolfCartVehicleSK.GolfCartVehicleSK_C">
+    <img src="https://i.postimg.cc/K8qGq66B/2025-09-27-12-48-59-index-html-Visual-Studio-Code.png" alt="Image 70">
+    <div class="item-name">ATK Golf Cart Kart</div>
+   <div class="copied-badge">Copied!</div>
+
+   <a class="item" tabindex="0" role="button" data-category="Vehicles" data-copy="cheat summon /Game/Athena/DrivableVehicles/PushCannon.PushCannon_C">
+    <img src="https://i.postimg.cc/7Z6D2BfX/2025-09-27-12-49-58-index-html-Visual-Studio-Code.png" alt="Image 71">
+    <div class="item-name">Pirate Cannon</div>
+   <div class="copied-badge">Copied!</div>
+
+   <a class="item" tabindex="0" role="button" data-category="Vehicles" data-copy="cheat summon /Game/Athena/DrivableVehicles/Mech/TestMechVehicle.TestMechVehicle_C">
+    <img src="https://i.postimg.cc/xd6zPpRH/mecha.png" alt="Image 72">
+    <div class="item-name">BRUTE Mech</div>
+   <div class="copied-badge">Copied!</div>
+
+   <a class="item" tabindex="0" role="button" data-category="Vehicles" data-copy="cheat summon /Game/Athena/DrivableVehicles/Meatball/Meatball_Large/MeatballVehicle_L.MeatballVehicle_L_C">
+    <img src="https://i.postimg.cc/02ZJY2CK/2025-09-27-13-01-23-General-Project-Reboot-Discord.png" alt="Image 73">
+    <div class="item-name">Boat</div>
+   <div class="copied-badge">Copied!</div>
+
+       <a class="item" tabindex="0" role="button" data-category="Vehicles" data-copy="cheat summon /Valet/SportsCar/Valet_SportsCar_Vehicle.Valet_SportsCar_Vehicle_C">
+        <img src="https://i.postimg.cc/qq8xJXsC/2025-09-27-12-29-30-index-html-Visual-Studio-Code.png" alt="Image 63">
+        <div class="item-name">Whiplash Car</div>
+       <div class="copied-badge">Copied!</div>
+
+       <a class="item" tabindex="0" role="button" data-category="Vehicles" data-copy="cheat summon /Valet/BasicCar/Valet_BasicCar_Vehicle.Valet_BasicCar_Vehicle_C">
+        <img src="https://i.postimg.cc/nLr8XMwL/2025-09-27-12-30-37-index-html-Visual-Studio-Code.png" alt="Image 64">
+        <div class="item-name">Prevelant Car</div>
+       <div class="copied-badge">Copied!</div>
+
+       <a class="item" tabindex="0" role="button" data-category="Vehicles" data-copy="cheat summon /Valet/TaxiCab/Valet_TaxiCab_Vehicle.Valet_TaxiCab_Vehicle_C">
+        <img src="https://i.postimg.cc/bw6WfpY9/2025-09-27-12-30-46-index-html-Visual-Studio-Code.png" alt="Image 65">
+        <div class="item-name">Taxi Car</div>
+       <div class="copied-badge">Copied!</div>
+
+       <a class="item" tabindex="0" role="button" data-category="Vehicles" data-copy="cheat summon /Valet/BasicTruck/Valet_BasicTruck_Vehicle.Valet_BasicTruck_Vehicle_C">
+        <img src="https://i.postimg.cc/ZYrQKrKd/2025-09-27-12-31-30-index-html-Visual-Studio-Code.png" alt="Image 66">
+        <div class="item-name">Bear Car</div>
+       <div class="copied-badge">Copied!</div>
+
+       <a class="item" tabindex="0" role="button" data-category="Vehicles" data-copy="cheat summon /Valet/BigRig/Valet_BigRig_Vehicle.Valet_BigRig_Vehicle_C">
+        <img src="https://i.postimg.cc/bNm3sLXZ/2025-09-27-12-32-06-index-html-Visual-Studio-Code.png" alt="Image 67">
+        <div class="item-name">Mudflap Car</div>
+       <div class="copied-badge">Copied!</div>
+
+       <a class="item" tabindex="0" role="button" data-category="Vehicles" data-copy="/SpicySake/Pawns/NPC_Pawn_SpicySake_Parent.NPC_Pawn_SpicySake_Parent_C">
+        <img src="https://i.postimg.cc/G2rcgvLs/shark-1.png" alt="Image 68">
+        <div class="item-name">Shark</div>
+       <div class="copied-badge">Copied!</div>
+
+       <a class="item" tabindex="0" role="button" data-category="Vehicles" data-copy="cheat summon /Nevada/Blueprints/Vehicle/Nevada_Vehicle_V2.Nevada_Vehicle_V2_C">
+        <img src="https://i.postimg.cc/Fs2Xn0Gh/fuo.png" alt="Image 69">
+        <div class="item-name">UFO</div>
+       <div class="copied-badge">Copied!</div>
+
+       <a class="item" tabindex="0" role="button" data-category="Vehicles" data-copy="cheat summon /ButterCake/Pawns/NPC_Pawn_ButterCake_Base.NPC_Pawn_ButterCake_Base_C">
+        <img src="https://i.postimg.cc/SKYr1zTb/purpk.png" alt="Image 70">
+        <div class="item-name">Purple Klombo</div>
+       <div class="copied-badge">Copied!</div>
+
+       <a class="item" tabindex="0" role="button" data-category="Vehicles" data-copy="cheat summon /ButterCake/Pawns/NPC_Pawn_ButterCake_C.NPC_Pawn_ButterCake_C_C">
+        <img src="https://i.postimg.cc/LXHJYcZJ/greenk.png" alt="Image 71">
+        <div class="item-name">Green Klombo</div>
+       <div class="copied-badge">Copied!</div>
+
+       <a class="item" tabindex="0" role="button" data-category="Misc" data-copy="cheat giveitem WID_Athena_HappyGhost">
+        <img src="https://i.postimg.cc/Y91TVPnK/2025-09-27-13-22-18-index-html-Visual-Studio-Code.png" alt="Image 72">
+        <div class="item-name">Harpoon Gun</div>
+       <div class="copied-badge">Copied!</div>
+
+       <a class="item" tabindex="0" role="button" data-category="Misc" data-copy="cheat giveitem WID_Athena_FloppingRabbit">
+        <img src="https://i.postimg.cc/QMc6xTpq/2025-09-27-13-24-27-index-html-Visual-Studio-Code.png" alt="Image 73">
+        <div class="item-name">Fishing rod</div>
+       <div class="copied-badge">Copied!</div>
+
+    </a>
+
+
+
+    
+  </div>
+</div>
+
+<script>
+async function copyToClipboard(text){
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    try{ await navigator.clipboard.writeText(text); return true;}catch(e){}
+  }
+  try{
+    const ta=document.createElement('textarea'); ta.value=text;
+    ta.setAttribute('readonly',''); ta.style.position='absolute';
+    ta.style.left='-9999px'; document.body.appendChild(ta);
+    ta.select(); const ok=document.execCommand('copy');
+    document.body.removeChild(ta); return ok;
+  }catch(e){ return false; }
+}
+
+const items=document.querySelectorAll('.gallery .item');
+items.forEach(item=>{
+  const showCopied=()=>{ item.classList.add('copied'); setTimeout(()=>item.classList.remove('copied'),1100); };
+  const handler=async(ev)=>{ ev.preventDefault(); const text=item.dataset.copy||''; const ok=await copyToClipboard(text); if(ok) showCopied(); else alert('Could not copy to clipboard.'); };
+  item.addEventListener('click', handler);
+  item.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' ') handler(e); });
+});
+
+// Sidebar filtering
+const buttons=document.querySelectorAll('.sidebar button');
+buttons.forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const cat=btn.dataset.category.toLowerCase();
+    buttons.forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    items.forEach(item=>{
+      if(cat==="all" || item.dataset.category.toLowerCase()===cat){ item.style.display='flex'; }
+      else{ item.style.display='none'; }
+    });
+  });
+});
+
+// Search filter
+document.getElementById('search').addEventListener('input', e=>{
+  const val=e.target.value.toLowerCase();
+  items.forEach(item=>{
+    const name=item.querySelector('.item-name').textContent.toLowerCase();
+    item.style.display = name.includes(val) ? 'flex' : 'none';
+  });
+});
+</script>
+
+</body>
+</html>
